@@ -21,25 +21,21 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
     private val locationPermissionRequestCode = 1001
-
-    // Initialize the Socket.io client
     private lateinit var mSocket: Socket
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize FusedLocationProviderClient
+       
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-
-        // Create location request
         locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY, // Use the correct priority
-            5000L  // Interval in milliseconds
-        ).setMinUpdateIntervalMillis(3000L)  // Fastest interval
+            Priority.PRIORITY_HIGH_ACCURACY,
+            5000L  
+        ).setMinUpdateIntervalMillis(3000L)
             .build()
 
-        // Create location callback
+        
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
@@ -50,24 +46,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Check for location permissions
+        
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED) {
-            // Request location permissions if not granted
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 locationPermissionRequestCode
             )
         } else {
-            // Permissions already granted - start location updates
             startLocationUpdates()
         }
 
-        // Connect to the Socket.io server
         try {
-            // Replace with your backend server URL
-            mSocket = IO.socket("http://122.173.31.20") // Replace with actual IP or domain
+            
+            mSocket = IO.socket("PUT IN YOUR BACKEND IP")
             mSocket.connect()
             Log.d("SocketIO", "Connected to server")
         } catch (e: URISyntaxException) {
@@ -79,15 +72,15 @@ class MainActivity : AppCompatActivity() {
     private fun startLocationUpdates() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED) {
-            // Permission is granted, start location updates
+            
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
         } else {
-            // Permission is not granted, request permission
+
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionRequestCode)
         }
     }
 
-    // Emit location data to the Socket.io server
+    // Emit 
     private fun emitLocationToServer(latitude: Double, longitude: Double) {
         if (this::mSocket.isInitialized && mSocket.connected()) {
             val locationData = JSONObject()
@@ -101,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Handle permission request result
+    
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
@@ -117,7 +110,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Optional: Stop location updates to save battery
+
     override fun onPause() {
         super.onPause()
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
